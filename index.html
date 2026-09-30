@@ -381,11 +381,7 @@
       <div class="saida">
         <span class="rotulo">Mensagem para o WhatsApp</span>
         <div class="conversa">
-          <div class="balao"><span id="msgCompleta">Atenção, motoristas!
-📅 Retirada do novo uniforme: sexta-feira, 09/10, das 8h às 16h.
-📍 Local: garagem central. Traga seu crachá.
-Confirme com 👍. Dúvidas: RH.
-Equipe Marvão Serviços</span><span class="hora" id="horaMsg">08:12</span></div>
+          <div class="balao"><span id="msgCompleta"></span><span class="hora" id="horaMsg">08:12</span></div>
         </div>
         <div class="acoes">
           <button type="button" class="copiar" data-copiar="msgCompleta" disabled>Copiar mensagem</button>
@@ -395,7 +391,7 @@ Equipe Marvão Serviços</span><span class="hora" id="horaMsg">08:12</span></div
 
       <div class="saida">
         <span class="rotulo">Versão curta, para lembrete na véspera</span>
-        <div class="curta" id="msgCurta">Lembrete: amanhã (09/10), retirada do uniforme na garagem central, das 8h às 16h. Traga o crachá.</div>
+        <div class="curta" id="msgCurta"></div>
         <div class="acoes">
           <button type="button" class="copiar" data-copiar="msgCurta" disabled>Copiar versão curta</button>
           <span class="copiado" id="copiado-msgCurta"></span>
@@ -415,8 +411,32 @@ Equipe Marvão Serviços</span><span class="hora" id="horaMsg">08:12</span></div
 
   // Regras usadas só no modo reserva (sem Make). No modo Make, as regras ficam no próprio Make.
   const REGRAS_RESERVA = `Você é o Copiloto de Agendamentos da Marvão Serviços, empresa de transporte escolar com cerca de 700 motoristas. Escreva uma mensagem de WhatsApp para os motoristas com base no pedido abaixo.
-Regras: linguagem simples e respeitosa, trate por "você", no máximo 6 linhas, primeira linha = o que é e quando, use as datas exatamente como informadas, no máximo 2 emojis, mensagem de grupo começa com "Atenção, motoristas!" e individual com "Olá, [nome]!", se o detalhamento indicar urgência comece com "⚠️ URGENTE:", use as informações do detalhamento (o que levar, instruções), termine com "Confirme com 👍. Dúvidas: RH." e assine "Equipe Marvão Serviços". Nunca invente dados. Nunca inclua dados de alunos ou dados pessoais de motoristas.
-Responda somente com a mensagem, depois uma linha com --- e depois uma versão curta de 1 linha para lembrete na véspera.`;
+A mensagem deve ser visualmente organizada, não um bloco de texto: saudação ("Olá, motoristas!" ou "Olá, [nome]!"; se urgente, primeira linha "⚠️ *URGENTE*"), título em *negrito*, um item por linha com emoji e rótulo em negrito (📅 *Data:*, 🕗 *Horário:*, 📍 *Local:*), bloco "🎒 *O que levar:*" em lista quando houver, demais instruções do detalhamento em lista com o mais importante em negrito, linha em branco entre os blocos, fechamento "Confirme com 👍 ao ler. Dúvidas, fale com o RH." e assinatura "_Equipe Marvão Serviços_". O tamanho acompanha o detalhamento. Use a formatação do WhatsApp (*negrito*, _itálico_, listas com "- "). Use a data exatamente como informada. Nunca invente dados. Nunca inclua dados de alunos ou dados pessoais de motoristas.
+Responda somente com a mensagem, depois uma linha com --- e depois uma versão curta de 1 ou 2 linhas para lembrete na véspera.`;
+
+  // Mensagem de exemplo mostrada antes da primeira geração
+  const EXEMPLO = `Olá, motoristas!
+
+*Retirada do novo uniforme*
+A troca do uniforme é *obrigatória* para todos.
+
+📅 *Data:* sexta-feira, 09/10
+🕗 *Horário:* das 8h às 16h
+📍 *Local:* Garagem central
+
+🎒 *O que levar:*
+- Crachá
+- Uniforme antigo, para a troca
+
+⚠️ Não pode ir? Avise a sua coordenação *até quinta-feira*.
+
+Confirme com 👍 ao ler. Dúvidas, fale com o RH.
+_Equipe Marvão Serviços_
+---
+🔔 *Lembrete:* amanhã (09/10), *retirada do uniforme* na Garagem central, das 8h às 16h. Traga o *crachá* e o *uniforme antigo*.`;
+
+  // Texto original (com * e _) de cada saída, usado pelos botões de copiar
+  const textos = { msgCompleta: '', msgCurta: '' };
 
   const $ = id => document.getElementById(id);
   const DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
@@ -482,10 +502,26 @@ Responda somente com a mensagem, depois uma linha com --- e depois uma versão c
     ].join('\n');
   }
 
+  // Mostra a formatação do WhatsApp na tela: *negrito*, _itálico_, ~riscado~
+  function formatarZap(texto) {
+    const seguro = texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return seguro
+      .replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s.,;:!?)]|$)/gm, '$1<strong>$2</strong>')
+      .replace(/(^|[\s(])_([^_\n]+?)_(?=[\s.,;:!?)]|$)/gm, '$1<em>$2</em>')
+      .replace(/(^|[\s(])~([^~\n]+?)~(?=[\s.,;:!?)]|$)/gm, '$1<s>$2</s>');
+  }
+
+  function preencher(texto) {
+    const [completa, curta] = texto.split(/\n[ \t]*-{3,}[ \t]*\n/);
+    textos.msgCompleta = (completa || '').trim();
+    textos.msgCurta = (curta || '').trim() || '(a IA não gerou versão curta)';
+    $('msgCompleta').innerHTML = formatarZap(textos.msgCompleta);
+    $('msgCurta').innerHTML = formatarZap(textos.msgCurta);
+  }
+  preencher(EXEMPLO);
+
   function mostrarResultado(texto) {
-    const [completa, curta] = texto.split(/\n?-{3,}\n?/);
-    $('msgCompleta').textContent = (completa || '').trim();
-    $('msgCurta').textContent = (curta || '').trim() || '(a IA não gerou versão curta)';
+    preencher(texto);
     const agora = new Date();
     $('horaMsg').textContent = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
     $('resultado').classList.remove('exemplo');
@@ -534,7 +570,7 @@ Responda somente com a mensagem, depois uma linha com --- e depois uma versão c
   document.querySelectorAll('[data-copiar]').forEach(btn => btn.addEventListener('click', async () => {
     const id = btn.dataset.copiar;
     try {
-      await navigator.clipboard.writeText($(id).textContent);
+      await navigator.clipboard.writeText(textos[id]);
       $('copiado-' + id).textContent = 'Copiado. Agora é só colar no WhatsApp.';
     } catch {
       $('copiado-' + id).textContent = 'Não foi possível copiar. Selecione o texto e use Ctrl+C.';
