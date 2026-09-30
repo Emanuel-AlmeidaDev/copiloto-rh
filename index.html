@@ -118,10 +118,11 @@
   }
 
   .campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .par { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .par { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
   @media (max-width: 460px) { .par { grid-template-columns: 1fr; } }
   label, .rotulo { font-weight: 700; font-size: .92rem; }
   .obrig { color: var(--suave); font-weight: 400; }
+  .legenda-obrig { margin-left: auto; color: var(--suave); font-size: .82rem; }
   .dica { color: var(--suave); font-size: .85rem; margin: 0; }
 
   input[type=text], input[type=date], input[type=time], select, textarea {
@@ -276,31 +277,33 @@
 <main class="envoltorio">
   <form id="form" class="colunas" novalidate>
     <section class="etapa" aria-labelledby="t1">
-      <div class="etapa-cabeca"><span class="numero">1</span><h2 id="t1">O que e onde</h2></div>
-
-      <div class="campo">
-        <label for="tipo">Tipo de agendamento <span class="obrig">(obrigatório)</span></label>
-        <select id="tipo" required>
-          <option value="">Selecione…</option>
-          <option>Reunião</option>
-          <option>Abastecimento</option>
-          <option>Mudança de escala</option>
-          <option>Retirada de uniforme</option>
-          <option>Entrega de ticket</option>
-          <option>Retirada de cartão corporativo</option>
-          <option>Treinamento</option>
-          <option>Vistoria do veículo</option>
-          <option>Feriado / calendário escolar</option>
-          <option value="outro">Outro</option>
-        </select>
-        <input type="text" id="tipoOutro" class="oculto" placeholder="Descreva o tipo de agendamento">
-      </div>
+      <div class="etapa-cabeca"><span class="numero">1</span><h2 id="t1">O que e onde</h2><span class="legenda-obrig">* obrigatório</span></div>
 
       <div class="par">
         <div class="campo">
-          <label for="data">Data <span class="obrig">(obrigatório)</span></label>
+          <label for="tipo">Tipo de agendamento <span class="obrig" aria-hidden="true">*</span></label>
+          <select id="tipo" required>
+            <option value="">Selecione…</option>
+            <option>Reunião</option>
+            <option>Abastecimento</option>
+            <option>Mudança de escala</option>
+            <option>Retirada de uniforme</option>
+            <option>Entrega de ticket</option>
+            <option>Retirada de cartão corporativo</option>
+            <option>Treinamento</option>
+            <option>Vistoria do veículo</option>
+            <option>Feriado / calendário escolar</option>
+            <option value="outro">Outro</option>
+          </select>
+          <input type="text" id="tipoOutro" class="oculto" placeholder="Descreva o tipo de agendamento">
+        </div>
+        <div class="campo">
+          <label for="data">Data <span class="obrig" aria-hidden="true">*</span></label>
           <input type="date" id="data" required>
         </div>
+      </div>
+
+      <div class="par">
         <div class="campo">
           <span class="rotulo" id="rotuloHorario">Horário <span class="obrig">(início · término)</span></span>
           <div class="par" style="gap:8px; grid-template-columns:1fr 1fr">
@@ -308,20 +311,19 @@
             <input type="time" id="horaFim" aria-label="Horário de término (opcional)">
           </div>
         </div>
-      </div>
-
-      <div class="campo">
-        <label for="local">Local <span class="obrig">(obrigatório)</span></label>
-        <!-- TROCAR: coloque aqui os locais reais da Marvão -->
-        <select id="local" required>
-          <option value="">Selecione…</option>
-          <option>Garagem central</option>
-          <option>Sede administrativa (RH)</option>
-          <option>Posto conveniado</option>
-          <option>Online (link enviado depois)</option>
-          <option value="outro">Outro</option>
-        </select>
-        <input type="text" id="localOutro" class="oculto" placeholder="Digite o local">
+        <div class="campo">
+          <label for="local">Local <span class="obrig" aria-hidden="true">*</span></label>
+          <!-- TROCAR: coloque aqui os locais reais da Marvão -->
+          <select id="local" required>
+            <option value="">Selecione…</option>
+            <option>Garagem central</option>
+            <option>Sede administrativa (RH)</option>
+            <option>Posto conveniado</option>
+            <option>Online (link enviado depois)</option>
+            <option value="outro">Outro</option>
+          </select>
+          <input type="text" id="localOutro" class="oculto" placeholder="Digite o local">
+        </div>
       </div>
 
       <div class="campo">
@@ -356,7 +358,7 @@
       </div>
 
       <div class="campo oculto" id="blocoIndividual">
-        <label for="nome">Primeiro nome do motorista <span class="obrig">(obrigatório)</span></label>
+        <label for="nome">Primeiro nome do motorista <span class="obrig" aria-hidden="true">*</span></label>
         <input type="text" id="nome" placeholder="Ex.: João" maxlength="30" autocomplete="off">
         <p class="dica">Só o primeiro nome. Não informe CPF, telefone ou outros dados pessoais.</p>
       </div>

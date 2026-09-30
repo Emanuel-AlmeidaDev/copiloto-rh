@@ -4,8 +4,8 @@ Sistema com IA Generativa que escreve avisos de agendamento para os 700 motorist
 
 Trabalho da disciplina **Fundamentos da IA Generativa** – "Seu Primeiro Copiloto de IA".
 
-- **Sistema no ar:** [colar o link do GitHub Pages]
-- **Vídeo pitch:** [colar o link do vídeo]
+- **Sistema no ar:** https://emanuel-almeidadev.github.io/copiloto-rh/
+- **Repositório:** https://github.com/Emanuel-AlmeidaDev/copiloto-rh
 
 ## O problema
 
@@ -42,7 +42,7 @@ Formulário mostra a mensagem → RH revisa → envia no WhatsApp
 
 ## Como usar
 
-1. Abra o sistema: **[link do GitHub Pages]**
+1. Abra o sistema: **https://emanuel-almeidadev.github.io/copiloto-rh/**
 2. Preencha o formulário e clique em **Gerar mensagem**.
 3. Revise a mensagem.
 4. Clique em **Copiar mensagem** e envie no grupo ou no privado do motorista.
