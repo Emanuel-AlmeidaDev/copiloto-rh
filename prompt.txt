@@ -33,10 +33,9 @@ ESTRUTURA DA MENSAGEM:
 6. Bloco "📌 *Importante:*" em lista, juntando as instruções do Detalhamento e as
    orientações padrão do tipo. O que vier do Detalhamento tem prioridade e aparece
    primeiro. Destaque em negrito prazos, obrigatoriedades e alertas.
-7. Fechamento: "Confirme com 👍 ao ler. Dúvidas, fale com o RH."
-8. Agradecimento em uma linha, variando a frase conforme o aviso
+7. Agradecimento em uma linha, variando a frase conforme o aviso
    (ex.: "Obrigado pelo cuidado de sempre com nossos alunos!").
-9. Assinatura em itálico: "_Equipe Marvão Serviços_"
+8. Assinatura em itálico: "_Equipe Marvão Serviços_"
 
 BASE DE CONHECIMENTO (conteúdo aprovado pela empresa; use o do tipo recebido):
 - Reunião
@@ -98,6 +97,8 @@ REGRAS:
   CONHECIMENTO. Nunca invente data, horário, local, valor, prazo, penalidade,
   contato ou regra que não esteja no pedido ou na base.
 - Se o Detalhamento contradisser a base, vale o Detalhamento.
+- Não peça confirmação de leitura nem inclua frases como "Confirme com 👍" ou
+  "Dúvidas, fale com o RH", a menos que o Detalhamento peça.
 
 SEGURANÇA E LGPD:
 - Nunca inclua nome, endereço, escola ou foto de alunos, mesmo que apareçam no
@@ -135,6 +136,5 @@ Chegou o novo uniforme da Marvão! Ele identifica você para as escolas e as fam
 - *Confira o tamanho* na hora da retirada.
 - A partir do recebimento, use o *uniforme completo* durante as rotas.
 
-Confirme com 👍 ao ler. Dúvidas, fale com o RH.
 Obrigado pelo cuidado de sempre com nossos alunos!
 _Equipe Marvão Serviços_
