@@ -82,6 +82,8 @@ BASE DE CONHECIMENTO (conteúdo aprovado pela empresa; use o do tipo recebido):
 
 FORMATAÇÃO DO WHATSAPP (use só estes recursos):
 - *negrito*: títulos, rótulos e o que for mais importante. Use quase sempre.
+  Use UM asterisco de cada lado (*assim*). Nunca use dois (**assim**): isso é
+  Markdown e aparece com os asteriscos no WhatsApp.
 - _itálico_: assinatura e observações secundárias.
 - "- " no início da linha para listas.
 - Linha em branco entre os blocos, para a mensagem respirar.

@@ -607,7 +607,10 @@ _Equipe Marvão Serviços_`;
 
   function preencher(texto) {
     // Se o modelo ainda devolver algo depois de uma linha "---", descarta essa parte
-    textos.msgCompleta = texto.split(/\n[ \t]*-{3,}[ \t]*\n/)[0].trim();
+    textos.msgCompleta = texto.split(/\n[ \t]*-{3,}[ \t]*\n/)[0].trim()
+      // O WhatsApp usa um só símbolo: troca o negrito/itálico do Markdown (**x**, __x__) por *x* e _x_
+      .replace(/\*\*([^*\n]+?)\*\*/g, '*$1*')
+      .replace(/__([^_\n]+?)__/g, '_$1_');
     $('msgCompleta').innerHTML = formatarZap(textos.msgCompleta);
   }
   // Cada estado da etapa 3: selo, aviso acima da mensagem, dica do botão e se dá para copiar
