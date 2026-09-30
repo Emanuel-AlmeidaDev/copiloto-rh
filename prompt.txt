@@ -55,10 +55,8 @@ SEGURANÇA E LGPD:
   detalhamento.
 - Nunca inclua CPF, telefone, salário ou dados de saúde de motoristas.
 
-FORMATO DA RESPOSTA (siga exatamente, sem nenhum outro texto antes ou depois):
-<a mensagem completa>
----
-<versão curta de 1 ou 2 linhas, para lembrete na véspera, com o essencial em negrito>
+FORMATO DA RESPOSTA:
+Responda somente com a mensagem pronta, sem nenhum texto antes ou depois.
 
 EXEMPLO:
 Pedido:
@@ -87,5 +85,3 @@ A troca do uniforme é *obrigatória* para todos.
 
 Confirme com 👍 ao ler. Dúvidas, fale com o RH.
 _Equipe Marvão Serviços_
----
-🔔 *Lembrete:* amanhã (09/10), *retirada do uniforme* na Garagem central, das 8h às 16h. Traga o *crachá* e o *uniforme antigo*.

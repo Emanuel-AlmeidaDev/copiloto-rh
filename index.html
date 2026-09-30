@@ -23,7 +23,6 @@
     --zap-fundo: #E7F4DD;       /* balão de mensagem enviada */
     --zap-tinta: #16301A;
     --zap-hora: #5E7A62;
-    --curta-fundo: #EDEDE7;
     --erro: #B3261E;
     --erro-fundo: #FCEDEC;
     --info: #5C4A00;
@@ -43,7 +42,7 @@
     :root:not([data-theme="light"]) {
       --fundo: #121317; --superficie: #1B1D22; --campo: #16171B; --tinta: #ECECE6; --suave: #A3A6AE;
       --linha: #2E3037; --foco: #F2B705; --zap-fundo: #1F3A26; --zap-tinta: #DDF1D8; --zap-hora: #8DB295;
-      --curta-fundo: #23252B; --erro: #FF8A80; --erro-fundo: #3A1C1A; --info: #F7D774; --info-fundo: #332B0C;
+      --erro: #FF8A80; --erro-fundo: #3A1C1A; --info: #F7D774; --info-fundo: #332B0C;
       --marca-fundo: #F2B705; --marca-tinta: #16181D;
       color-scheme: dark;
     }
@@ -51,7 +50,7 @@
   :root[data-theme="dark"] {
     --fundo: #121317; --superficie: #1B1D22; --campo: #16171B; --tinta: #ECECE6; --suave: #A3A6AE;
     --linha: #2E3037; --foco: #F2B705; --zap-fundo: #1F3A26; --zap-tinta: #DDF1D8; --zap-hora: #8DB295;
-    --curta-fundo: #23252B; --erro: #FF8A80; --erro-fundo: #3A1C1A; --info: #F7D774; --info-fundo: #332B0C;
+    --erro: #FF8A80; --erro-fundo: #3A1C1A; --info: #F7D774; --info-fundo: #332B0C;
     --marca-fundo: #F2B705; --marca-tinta: #16181D;
     color-scheme: dark;
   }
@@ -209,8 +208,7 @@
     font-family: var(--f-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
     color: var(--suave); border: 1.5px dashed var(--linha); border-radius: 4px; padding: 3px 8px;
   }
-  .saidas { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: start; }
-  @media (max-width: 820px) { .saidas { grid-template-columns: 1fr; } }
+  .saidas { display: grid; gap: 24px; }
   .saida { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
   .conversa {
     background: var(--campo);
@@ -224,7 +222,7 @@
     background: var(--zap-fundo); color: var(--zap-tinta);
     border-radius: 12px 0 12px 12px;
     padding: 10px 14px 22px;
-    max-width: 100%;
+    max-width: min(100%, 560px);
     white-space: pre-wrap; overflow-wrap: anywhere;
     line-height: 1.55;
   }
@@ -236,11 +234,7 @@
     position: absolute; right: 10px; bottom: 5px;
     font-size: .72rem; color: var(--zap-hora); font-variant-numeric: tabular-nums;
   }
-  .curta {
-    background: var(--curta-fundo); border-radius: var(--raio);
-    padding: 14px 16px; white-space: pre-wrap; overflow-wrap: anywhere;
-  }
-  .exemplo .balao, .exemplo .curta { opacity: .7; }
+  .exemplo .balao { opacity: .7; }
 
   .acoes { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .copiar {
@@ -385,18 +379,8 @@
         </div>
         <div class="acoes">
           <button type="button" class="copiar" data-copiar="msgCompleta" disabled>Copiar mensagem</button>
-          <span class="copiado" id="copiado-msgCompleta"></span>
+          <span class="copiado" id="copiado-msgCompleta">Revise antes de enviar. A IA sugere; quem envia é você.</span>
         </div>
-      </div>
-
-      <div class="saida">
-        <span class="rotulo">Versão curta, para lembrete na véspera</span>
-        <div class="curta" id="msgCurta"></div>
-        <div class="acoes">
-          <button type="button" class="copiar" data-copiar="msgCurta" disabled>Copiar versão curta</button>
-          <span class="copiado" id="copiado-msgCurta"></span>
-        </div>
-        <p class="dica">Revise antes de enviar. A IA sugere; quem envia é você.</p>
       </div>
     </div>
   </section>
@@ -412,7 +396,7 @@
   // Regras usadas só no modo reserva (sem Make). No modo Make, as regras ficam no próprio Make.
   const REGRAS_RESERVA = `Você é o Copiloto de Agendamentos da Marvão Serviços, empresa de transporte escolar com cerca de 700 motoristas. Escreva uma mensagem de WhatsApp para os motoristas com base no pedido abaixo.
 A mensagem deve ser visualmente organizada, não um bloco de texto: saudação ("Olá, motoristas!" ou "Olá, [nome]!"; se urgente, primeira linha "⚠️ *URGENTE*"), título em *negrito*, um item por linha com emoji e rótulo em negrito (📅 *Data:*, 🕗 *Horário:*, 📍 *Local:*), bloco "🎒 *O que levar:*" em lista quando houver, demais instruções do detalhamento em lista com o mais importante em negrito, linha em branco entre os blocos, fechamento "Confirme com 👍 ao ler. Dúvidas, fale com o RH." e assinatura "_Equipe Marvão Serviços_". O tamanho acompanha o detalhamento. Use a formatação do WhatsApp (*negrito*, _itálico_, listas com "- "). Use a data exatamente como informada. Nunca invente dados. Nunca inclua dados de alunos ou dados pessoais de motoristas.
-Responda somente com a mensagem, depois uma linha com --- e depois uma versão curta de 1 ou 2 linhas para lembrete na véspera.`;
+Responda somente com a mensagem, sem nenhum texto antes ou depois.`;
 
   // Mensagem de exemplo mostrada antes da primeira geração
   const EXEMPLO = `Olá, motoristas!
@@ -431,12 +415,10 @@ A troca do uniforme é *obrigatória* para todos.
 ⚠️ Não pode ir? Avise a sua coordenação *até quinta-feira*.
 
 Confirme com 👍 ao ler. Dúvidas, fale com o RH.
-_Equipe Marvão Serviços_
----
-🔔 *Lembrete:* amanhã (09/10), *retirada do uniforme* na Garagem central, das 8h às 16h. Traga o *crachá* e o *uniforme antigo*.`;
+_Equipe Marvão Serviços_`;
 
-  // Texto original (com * e _) de cada saída, usado pelos botões de copiar
-  const textos = { msgCompleta: '', msgCurta: '' };
+  // Texto original da mensagem (com * e _), usado pelo botão de copiar
+  const textos = { msgCompleta: '' };
 
   const $ = id => document.getElementById(id);
   const DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
@@ -512,11 +494,9 @@ _Equipe Marvão Serviços_
   }
 
   function preencher(texto) {
-    const [completa, curta] = texto.split(/\n[ \t]*-{3,}[ \t]*\n/);
-    textos.msgCompleta = (completa || '').trim();
-    textos.msgCurta = (curta || '').trim() || '(a IA não gerou versão curta)';
+    // Se o modelo ainda devolver algo depois de uma linha "---", descarta essa parte
+    textos.msgCompleta = texto.split(/\n[ \t]*-{3,}[ \t]*\n/)[0].trim();
     $('msgCompleta').innerHTML = formatarZap(textos.msgCompleta);
-    $('msgCurta').innerHTML = formatarZap(textos.msgCurta);
   }
   preencher(EXEMPLO);
 
@@ -569,13 +549,14 @@ _Equipe Marvão Serviços_
   // Botões de copiar
   document.querySelectorAll('[data-copiar]').forEach(btn => btn.addEventListener('click', async () => {
     const id = btn.dataset.copiar;
+    const dica = $('copiado-' + id).dataset.dica ??= $('copiado-' + id).textContent;
     try {
       await navigator.clipboard.writeText(textos[id]);
       $('copiado-' + id).textContent = 'Copiado. Agora é só colar no WhatsApp.';
     } catch {
       $('copiado-' + id).textContent = 'Não foi possível copiar. Selecione o texto e use Ctrl+C.';
     }
-    setTimeout(() => $('copiado-' + id).textContent = '', 3000);
+    setTimeout(() => $('copiado-' + id).textContent = dica, 3000);
   }));
 </script>
 </body>

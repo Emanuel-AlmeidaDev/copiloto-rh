@@ -13,10 +13,9 @@ Os avisos para os motoristas (reuniões, abastecimento, mudança de escala, unif
 
 ## A solução
 
-Um formulário web em que o RH escolhe o tipo de agendamento, a data, o local e o público. Um cenário no **Make.com** envia o pedido para o **Google Gemini** com um prompt de sistema elaborado, e a mensagem pronta volta para a própria página:
+Um formulário web em que o RH escolhe o tipo de agendamento, a data, o local e o público. Um cenário no **Make.com** envia o pedido para o **Google Gemini** com um prompt de sistema elaborado, e a mensagem pronta volta para a própria página.
 
-1. mensagem completa para o WhatsApp;
-2. versão curta para lembrete na véspera.
+A mensagem sai organizada em blocos (título, data, horário, local, o que levar e instruções), com negrito e itálico do WhatsApp nos pontos importantes. O tamanho acompanha o detalhamento informado.
 
 ## Como funciona
 
