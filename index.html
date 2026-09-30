@@ -584,7 +584,9 @@ _Equipe Marvão Serviços_`;
     if (individual && !nome) faltando.push('nome do motorista');
     if (faltando.length) throw new Error('Falta preencher: ' + faltando.join(', ') + '.');
 
-    const horario = fim ? `das ${hora(inicio)} às ${hora(fim)}` : `às ${hora(inicio)}`;
+    // Horários no formato HH:MM comparam certo como texto; término igual ao início vale como horário único
+    if (fim && fim < inicio) throw new Error('O horário de término deve ser depois do início.');
+    const horario = fim && fim > inicio ? `das ${hora(inicio)} às ${hora(fim)}` : `às ${hora(inicio)}`;
 
     return [
       `Tipo: ${tipo}`,
