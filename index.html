@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copiloto de Agendamentos Marvão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  /* Layout: faixa amarela de ônibus escolar no topo; duas etapas lado a lado; a mensagem sai num balão de WhatsApp. */
+  :root {
+    --onibus: #F2B705;          /* amarelo do ônibus escolar: o único destaque */
+    --onibus-escuro: #C99700;
+    --faixa: #16181D;           /* faixa preta do ônibus */
+    --fundo: #F3F3EF;
+    --superficie: #FFFFFF;
+    --campo: #FAFAF7;
+    --tinta: #1A1C21;
+    --suave: #5E6169;
+    --linha: #DCDCD4;
+    --foco: #1A1C21;
+    --zap-fundo: #E7F4DD;       /* balão de mensagem enviada */
+    --zap-tinta: #16301A;
+    --zap-hora: #5E7A62;
+    --curta-fundo: #EDEDE7;
+    --erro: #B3261E;
+    --erro-fundo: #FCEDEC;
+    --info: #5C4A00;
+    --info-fundo: #FFF6D6;
+
+    --f-display: "Archivo", "Arial Narrow", Arial, sans-serif;
+    --f-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "JetBrains Mono", Consolas, monospace;
+
+    --marca-fundo: #16181D;     /* círculos e seleção: preto no claro, amarelo no escuro */
+    --marca-tinta: #F2B705;
+
+    --raio: 10px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fundo: #121317; --superficie: #1B1D22; --campo: #16171B; --tinta: #ECECE6; --suave: #A3A6AE;
+      --linha: #2E3037; --foco: #F2B705; --zap-fundo: #1F3A26; --zap-tinta: #DDF1D8; --zap-hora: #8DB295;
+      --curta-fundo: #23252B; --erro: #FF8A80; --erro-fundo: #3A1C1A; --info: #F7D774; --info-fundo: #332B0C;
+      --marca-fundo: #F2B705; --marca-tinta: #16181D;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fundo: #121317; --superficie: #1B1D22; --campo: #16171B; --tinta: #ECECE6; --suave: #A3A6AE;
+    --linha: #2E3037; --foco: #F2B705; --zap-fundo: #1F3A26; --zap-tinta: #DDF1D8; --zap-hora: #8DB295;
+    --curta-fundo: #23252B; --erro: #FF8A80; --erro-fundo: #3A1C1A; --info: #F7D774; --info-fundo: #332B0C;
+    --marca-fundo: #F2B705; --marca-tinta: #16181D;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--tinta);
+    font-family: var(--f-texto);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .envoltorio { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+
+  /* Topo: faixa amarela com a listra preta do ônibus */
+  header {
+    background: var(--onibus);
+    color: var(--faixa);
+    border-bottom: 10px solid var(--faixa);
+  }
+  header .envoltorio {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding-block: 28px 22px;
+  }
+  .marca {
+    font-family: var(--f-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 800; font-stretch: 112%;
+    font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1; margin: 0; letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  .subtitulo { margin: 8px 0 0; font-size: 1rem; max-width: 52ch; }
+  .placa {
+    font-family: var(--f-mono); font-size: .8rem; font-weight: 500;
+    border: 2px solid var(--faixa); border-radius: 6px; padding: 6px 10px; white-space: nowrap;
+  }
+
+  main { padding-block: 32px 40px; display: grid; gap: 24px; }
+
+  /* Etapas */
+  .colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  @media (max-width: 820px) { .colunas { grid-template-columns: 1fr; } }
+  .etapa {
+    background: var(--superficie);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    padding: 24px;
+    display: flex; flex-direction: column; gap: 18px;
+    min-width: 0;
+  }
+  .etapa-cabeca { display: flex; align-items: center; gap: 12px; }
+  .numero {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: grid; place-items: center; flex: none;
+    background: var(--marca-fundo); color: var(--marca-tinta);
+    font-family: var(--f-display); font-weight: 800; font-size: 1rem;
+  }
+  h2 {
+    font-family: var(--f-display); font-weight: 600; font-stretch: 112%;
+    font-size: 1.2rem; margin: 0; letter-spacing: -.005em;
+  }
+
+  .campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .par { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 460px) { .par { grid-template-columns: 1fr; } }
+  label, .rotulo { font-weight: 700; font-size: .92rem; }
+  .obrig { color: var(--suave); font-weight: 400; }
+  .dica { color: var(--suave); font-size: .85rem; margin: 0; }
+
+  input[type=text], input[type=date], input[type=time], select, textarea {
+    width: 100%;
+    font: inherit; font-size: 1rem;
+    color: var(--tinta);
+    background: var(--campo);
+    border: 1.5px solid var(--linha);
+    border-radius: 8px;
+    padding: 11px 12px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type=time], input[type=date] { font-variant-numeric: tabular-nums; }
+  select {
+    appearance: none;
+    padding-right: 40px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--suave) 50%), linear-gradient(135deg, var(--suave) 50%, transparent 50%);
+    background-position: calc(100% - 20px) 52%, calc(100% - 14px) 52%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+  }
+  textarea { min-height: 96px; resize: vertical; }
+  input:hover, select:hover, textarea:hover { border-color: var(--suave); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: none; border-color: var(--foco); box-shadow: 0 0 0 3px color-mix(in srgb, var(--onibus) 45%, transparent);
+  }
+  ::placeholder { color: var(--suave); opacity: .8; }
+
+  /* Seletor Grupo / Individual */
+  .segmentado {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--campo); border: 1.5px solid var(--linha); border-radius: 8px; padding: 4px; gap: 4px;
+  }
+  .segmentado label {
+    position: relative; text-align: center; padding: 9px 10px; border-radius: 6px; cursor: pointer;
+    font-weight: 700; color: var(--suave); transition: background .15s, color .15s;
+  }
+  .segmentado input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .segmentado label:has(input:checked) { background: var(--marca-fundo); color: var(--marca-tinta); }
+  .segmentado label:has(input:focus-visible) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--onibus) 45%, transparent); }
+
+  .lgpd {
+    display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start;
+    font-size: .88rem; color: var(--suave);
+    border-top: 1px dashed var(--linha); padding-top: 16px; margin: 0;
+  }
+  .lgpd strong {
+    font-family: var(--f-mono); font-size: .72rem; letter-spacing: .08em; color: var(--tinta);
+    border: 1.5px solid var(--tinta); border-radius: 4px; padding: 1px 6px; margin-top: 2px;
+  }
+  .rodape-etapa { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
+
+  .gerar {
+    font: inherit; font-family: var(--f-display); font-weight: 800; font-stretch: 112%; font-size: 1.1rem;
+    letter-spacing: .01em;
+    width: 100%; padding: 15px 20px; cursor: pointer;
+    background: var(--onibus); color: var(--faixa);
+    border: 2px solid var(--faixa); border-radius: 8px;
+    box-shadow: 0 4px 0 var(--faixa);
+    transition: transform .08s, box-shadow .08s, background .15s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .gerar:hover { background: var(--onibus-escuro); }
+  .gerar:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--faixa); }
+  .gerar:focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
+  .gerar:disabled { cursor: wait; opacity: .8; }
+  .giro {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2.5px solid var(--faixa); border-right-color: transparent;
+    animation: gira .8s linear infinite;
+  }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  .aviso { font-size: .9rem; border-radius: 8px; padding: 10px 12px; margin: 0; }
+  .aviso:empty { display: none; }
+  .aviso.erro { color: var(--erro); background: var(--erro-fundo); }
+  .aviso.info { color: var(--info); background: var(--info-fundo); }
+
+  /* Resultado */
+  .resultado { gap: 20px; }
+  .resultado .etapa-cabeca { justify-content: space-between; flex-wrap: wrap; }
+  .resultado .etapa-cabeca > div { display: flex; align-items: center; gap: 12px; }
+  .selo {
+    font-family: var(--f-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--suave); border: 1.5px dashed var(--linha); border-radius: 4px; padding: 3px 8px;
+  }
+  .saidas { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 820px) { .saidas { grid-template-columns: 1fr; } }
+  .saida { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .conversa {
+    background: var(--campo);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+    padding: 18px;
+    display: flex; flex-direction: column; align-items: flex-end;
+  }
+  .balao {
+    position: relative;
+    background: var(--zap-fundo); color: var(--zap-tinta);
+    border-radius: 12px 0 12px 12px;
+    padding: 10px 14px 22px;
+    max-width: 100%;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+    line-height: 1.55;
+  }
+  .balao::after {
+    content: ""; position: absolute; top: 0; right: -8px;
+    border-left: 8px solid var(--zap-fundo); border-bottom: 10px solid transparent;
+  }
+  .balao .hora {
+    position: absolute; right: 10px; bottom: 5px;
+    font-size: .72rem; color: var(--zap-hora); font-variant-numeric: tabular-nums;
+  }
+  .curta {
+    background: var(--curta-fundo); border-radius: var(--raio);
+    padding: 14px 16px; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .exemplo .balao, .exemplo .curta { opacity: .7; }
+
+  .acoes { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .copiar {
+    font: inherit; font-weight: 700; font-size: .92rem;
+    background: transparent; color: var(--tinta);
+    border: 1.5px solid var(--tinta); border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  }
+  .copiar:hover { background: var(--tinta); color: var(--superficie); }
+  .copiar:focus-visible { outline: 3px solid var(--onibus); outline-offset: 2px; }
+  .copiar:disabled { opacity: .45; cursor: not-allowed; background: transparent; color: var(--tinta); }
+  .copiado { color: var(--suave); font-size: .88rem; }
+
+  footer { color: var(--suave); font-size: .82rem; padding-block: 0 32px; }
+
+  .oculto { display: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation-duration: 0s !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="envoltorio">
+    <div>
+      <p class="marca">Marvão Serviços · Transporte Escolar</p>
+      <h1>Copiloto de Agendamentos</h1>
+      <p class="subtitulo">Preencha o agendamento e receba o aviso pronto para enviar aos motoristas no WhatsApp.</p>
+    </div>
+    <span class="placa">700 motoristas</span>
+  </div>
+</header>
+
+<main class="envoltorio">
+  <form id="form" class="colunas" novalidate>
+    <section class="etapa" aria-labelledby="t1">
+      <div class="etapa-cabeca"><span class="numero">1</span><h2 id="t1">O que e onde</h2></div>
+
+      <div class="campo">
+        <label for="tipo">Tipo de agendamento <span class="obrig">(obrigatório)</span></label>
+        <select id="tipo" required>
+          <option value="">Selecione…</option>
+          <option>Reunião</option>
+          <option>Abastecimento</option>
+          <option>Mudança de escala</option>
+          <option>Retirada de uniforme</option>
+          <option>Entrega de ticket</option>
+          <option>Retirada de cartão corporativo</option>
+          <option>Treinamento</option>
+          <option>Vistoria do veículo</option>
+          <option>Feriado / calendário escolar</option>
+          <option value="outro">Outro</option>
+        </select>
+        <input type="text" id="tipoOutro" class="oculto" placeholder="Descreva o tipo de agendamento">
+      </div>
+
+      <div class="par">
+        <div class="campo">
+          <label for="data">Data <span class="obrig">(obrigatório)</span></label>
+          <input type="date" id="data" required>
+        </div>
+        <div class="campo">
+          <span class="rotulo" id="rotuloHorario">Horário <span class="obrig">(início · término)</span></span>
+          <div class="par" style="gap:8px; grid-template-columns:1fr 1fr">
+            <input type="time" id="horaInicio" required aria-label="Horário de início (obrigatório)">
+            <input type="time" id="horaFim" aria-label="Horário de término (opcional)">
+          </div>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="local">Local <span class="obrig">(obrigatório)</span></label>
+        <!-- TROCAR: coloque aqui os locais reais da Marvão -->
+        <select id="local" required>
+          <option value="">Selecione…</option>
+          <option>Garagem central</option>
+          <option>Sede administrativa (RH)</option>
+          <option>Posto conveniado</option>
+          <option>Online (link enviado depois)</option>
+          <option value="outro">Outro</option>
+        </select>
+        <input type="text" id="localOutro" class="oculto" placeholder="Digite o local">
+      </div>
+
+      <div class="campo">
+        <label for="detalhamento">Detalhamento</label>
+        <textarea id="detalhamento" placeholder="Ex.: trazer crachá e documento com foto; quem não puder ir deve avisar a coordenação; é urgente"></textarea>
+        <p class="dica">O que levar, instruções, urgência ou qualquer outra informação importante.</p>
+      </div>
+    </section>
+
+    <section class="etapa" aria-labelledby="t2">
+      <div class="etapa-cabeca"><span class="numero">2</span><h2 id="t2">Para quem</h2></div>
+
+      <div class="campo">
+        <span class="rotulo">Público</span>
+        <div class="segmentado" role="radiogroup" aria-label="Público">
+          <label><input type="radio" name="publico" value="grupo" checked>Grupo</label>
+          <label><input type="radio" name="publico" value="individual">Individual</label>
+        </div>
+      </div>
+
+      <div class="campo" id="blocoGrupo">
+        <label for="grupo">Qual grupo?</label>
+        <select id="grupo">
+          <option>Todos os motoristas</option>
+          <option>Turno da manhã</option>
+          <option>Turno da tarde</option>
+          <option>Região Norte</option>
+          <option>Região Sul</option>
+          <option>Região Leste</option>
+          <option>Região Oeste</option>
+        </select>
+      </div>
+
+      <div class="campo oculto" id="blocoIndividual">
+        <label for="nome">Primeiro nome do motorista <span class="obrig">(obrigatório)</span></label>
+        <input type="text" id="nome" placeholder="Ex.: João" maxlength="30" autocomplete="off">
+        <p class="dica">Só o primeiro nome. Não informe CPF, telefone ou outros dados pessoais.</p>
+      </div>
+
+      <div class="rodape-etapa">
+        <p class="lgpd"><strong>LGPD</strong><span>Não digite nome, endereço ou escola de alunos, nem dados pessoais de motoristas. O texto é processado por um serviço de IA externo.</span></p>
+        <button type="submit" class="gerar" id="btnGerar">Gerar mensagem</button>
+        <p class="aviso" id="erro" role="alert"></p>
+      </div>
+    </section>
+  </form>
+
+  <section class="etapa resultado exemplo" id="resultado" aria-labelledby="t3" aria-live="polite">
+    <div class="etapa-cabeca">
+      <div><span class="numero">3</span><h2 id="t3">Mensagem pronta</h2></div>
+      <span class="selo" id="selo">Exemplo</span>
+    </div>
+
+    <div class="saidas">
+      <div class="saida">
+        <span class="rotulo">Mensagem para o WhatsApp</span>
+        <div class="conversa">
+          <div class="balao"><span id="msgCompleta">Atenção, motoristas!
+📅 Retirada do novo uniforme: sexta-feira, 09/10, das 8h às 16h.
+📍 Local: garagem central. Traga seu crachá.
+Confirme com 👍. Dúvidas: RH.
+Equipe Marvão Serviços</span><span class="hora" id="horaMsg">08:12</span></div>
+        </div>
+        <div class="acoes">
+          <button type="button" class="copiar" data-copiar="msgCompleta" disabled>Copiar mensagem</button>
+          <span class="copiado" id="copiado-msgCompleta"></span>
+        </div>
+      </div>
+
+      <div class="saida">
+        <span class="rotulo">Versão curta, para lembrete na véspera</span>
+        <div class="curta" id="msgCurta">Lembrete: amanhã (09/10), retirada do uniforme na garagem central, das 8h às 16h. Traga o crachá.</div>
+        <div class="acoes">
+          <button type="button" class="copiar" data-copiar="msgCurta" disabled>Copiar versão curta</button>
+          <span class="copiado" id="copiado-msgCurta"></span>
+        </div>
+        <p class="dica">Revise antes de enviar. A IA sugere; quem envia é você.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="envoltorio">Protótipo acadêmico · Fundamentos da IA Generativa · interface criada com apoio de IA</footer>
+
+<script>
+  // Endereço do webhook do Make. Cole aqui o endereço gerado no módulo "Custom webhook".
+  // Se ficar vazio, a página abre o ChatGPT com o pedido já preenchido (modo reserva).
+  const WEBHOOK_URL = 'https://hook.us1.make.com/7gpu742c46wp2e4loul5qfmttc4fch54';
+
+  // Regras usadas só no modo reserva (sem Make). No modo Make, as regras ficam no próprio Make.
+  const REGRAS_RESERVA = `Você é o Copiloto de Agendamentos da Marvão Serviços, empresa de transporte escolar com cerca de 700 motoristas. Escreva uma mensagem de WhatsApp para os motoristas com base no pedido abaixo.
+Regras: linguagem simples e respeitosa, trate por "você", no máximo 6 linhas, primeira linha = o que é e quando, use as datas exatamente como informadas, no máximo 2 emojis, mensagem de grupo começa com "Atenção, motoristas!" e individual com "Olá, [nome]!", se o detalhamento indicar urgência comece com "⚠️ URGENTE:", use as informações do detalhamento (o que levar, instruções), termine com "Confirme com 👍. Dúvidas: RH." e assine "Equipe Marvão Serviços". Nunca invente dados. Nunca inclua dados de alunos ou dados pessoais de motoristas.
+Responda somente com a mensagem, depois uma linha com --- e depois uma versão curta de 1 linha para lembrete na véspera.`;
+
+  const $ = id => document.getElementById(id);
+  const DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+
+  // Calcula o dia da semana aqui, para a IA não errar (LLMs costumam errar dias da semana).
+  function dataPorExtenso(iso) {
+    const [a, m, d] = iso.split('-').map(Number);
+    const dia = DIAS[new Date(a, m - 1, d).getDay()];
+    return `${dia}, ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${a}`;
+  }
+
+  function hora(h) {
+    const [hh, mm] = h.split(':');
+    return mm === '00' ? `${Number(hh)}h` : `${Number(hh)}h${mm}`;
+  }
+
+  function valorComOutro(selectId, outroId) {
+    const v = $(selectId).value;
+    return v === 'outro' ? $(outroId).value.trim() : v;
+  }
+
+  function aviso(texto, tipo) {
+    $('erro').textContent = texto;
+    $('erro').className = 'aviso ' + (tipo || 'erro');
+  }
+
+  // Mostra/esconde campos conforme as escolhas
+  $('tipo').addEventListener('change', () => $('tipoOutro').classList.toggle('oculto', $('tipo').value !== 'outro'));
+  $('local').addEventListener('change', () => $('localOutro').classList.toggle('oculto', $('local').value !== 'outro'));
+  document.querySelectorAll('input[name=publico]').forEach(r => r.addEventListener('change', () => {
+    const individual = document.querySelector('input[name=publico]:checked').value === 'individual';
+    $('blocoIndividual').classList.toggle('oculto', !individual);
+    $('blocoGrupo').classList.toggle('oculto', individual);
+  }));
+
+  // Junta os campos do formulário num pedido estruturado para a IA
+  function montarPedido() {
+    const tipo = valorComOutro('tipo', 'tipoOutro');
+    const local = valorComOutro('local', 'localOutro');
+    const data = $('data').value;
+    const inicio = $('horaInicio').value;
+    const fim = $('horaFim').value;
+    const individual = document.querySelector('input[name=publico]:checked').value === 'individual';
+    const nome = $('nome').value.trim();
+
+    const faltando = [];
+    if (!tipo) faltando.push('tipo de agendamento');
+    if (!data) faltando.push('data');
+    if (!inicio) faltando.push('horário de início');
+    if (!local) faltando.push('local');
+    if (individual && !nome) faltando.push('nome do motorista');
+    if (faltando.length) throw new Error('Falta preencher: ' + faltando.join(', ') + '.');
+
+    const horario = fim ? `das ${hora(inicio)} às ${hora(fim)}` : `às ${hora(inicio)}`;
+
+    return [
+      `Tipo: ${tipo}`,
+      `Data: ${dataPorExtenso(data)}`,
+      `Horário: ${horario}`,
+      `Local: ${local}`,
+      `Público: ${individual ? 'individual, motorista ' + nome : 'grupo, ' + $('grupo').value}`,
+      `Detalhamento: ${$('detalhamento').value.trim() || 'nenhum'}`
+    ].join('\n');
+  }
+
+  function mostrarResultado(texto) {
+    const [completa, curta] = texto.split(/\n?-{3,}\n?/);
+    $('msgCompleta').textContent = (completa || '').trim();
+    $('msgCurta').textContent = (curta || '').trim() || '(a IA não gerou versão curta)';
+    const agora = new Date();
+    $('horaMsg').textContent = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+    $('resultado').classList.remove('exemplo');
+    $('selo').textContent = 'Gerada agora';
+    document.querySelectorAll('[data-copiar]').forEach(b => b.disabled = false);
+    $('resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    aviso('');
+
+    let pedido;
+    try { pedido = montarPedido(); }
+    catch (err) { aviso(err.message); return; }
+
+    // Modo reserva: sem Make configurado, abre o ChatGPT com o pedido pronto
+    if (!WEBHOOK_URL) {
+      const textoCompleto = REGRAS_RESERVA + '\n\nPEDIDO:\n' + pedido;
+      navigator.clipboard?.writeText(textoCompleto).catch(() => {});
+      window.open('https://chatgpt.com/?q=' + encodeURIComponent(textoCompleto), '_blank');
+      aviso('Modo reserva: o pedido foi aberto no ChatGPT e copiado, caso queira colar no Gemini.', 'info');
+      return;
+    }
+
+    // Modo Make: envia o pedido ao webhook e mostra a resposta da IA aqui mesmo.
+    // Envio como formulário (não JSON) para o navegador não bloquear a chamada (CORS).
+    const btn = $('btnGerar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="giro" aria-hidden="true"></span>Gerando mensagem…';
+    try {
+      const resp = await fetch(WEBHOOK_URL, { method: 'POST', body: new URLSearchParams({ pedido }) });
+      if (!resp.ok) throw new Error('O Make respondeu com erro ' + resp.status + '.');
+      const texto = await resp.text();
+      if (!texto || texto === 'Accepted') throw new Error('O Make não devolveu a mensagem. Confira se o cenário está ligado.');
+      mostrarResultado(texto);
+    } catch (err) {
+      aviso('Não foi possível gerar a mensagem. ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Gerar mensagem';
+    }
+  });
+
+  // Botões de copiar
+  document.querySelectorAll('[data-copiar]').forEach(btn => btn.addEventListener('click', async () => {
+    const id = btn.dataset.copiar;
+    try {
+      await navigator.clipboard.writeText($(id).textContent);
+      $('copiado-' + id).textContent = 'Copiado. Agora é só colar no WhatsApp.';
+    } catch {
+      $('copiado-' + id).textContent = 'Não foi possível copiar. Selecione o texto e use Ctrl+C.';
+    }
+    setTimeout(() => $('copiado-' + id).textContent = '', 3000);
+  }));
+</script>
+</body>
+</html>
